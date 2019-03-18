@@ -1,0 +1,20 @@
+{
+    "name": "Timesheets",
+    "description": "Add registrations into your timesheets directly from your browser.",
+    "version": "1.0",
+    "manifest_version": 2,
+    "browser_action": {
+        "default_popup": "index.html",
+        "default_icon": "images/icon-16x16.png"
+    },
+    "icons": {
+        "16": "images/icon-16x16.png",
+        "48": "images/icon-48x48.png",
+        "128": "images/icon-128x128.png"
+    },
+    "permissions": [
+        "tabs",
+        "identity"
+    ],
+    "content_security_policy":"script-src 'self' https://cdn.firebase.com/ https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com; object-src 'self'"
+}
