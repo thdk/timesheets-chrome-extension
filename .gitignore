@@ -2,3 +2,4 @@ dist/
 .rpt2_cache/
 node_modules/
 src/config.ts
+.vscode/

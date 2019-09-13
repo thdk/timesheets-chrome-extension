@@ -7,6 +7,7 @@ import replace from 'rollup-plugin-replace';
 const external = [
   "firebase/app",
   "@firebase/firestore",
+  "firebase/auth",
   "mobx",
   "firebaseui",
 ];
@@ -16,16 +17,20 @@ export default {
   // they must either be included as script in html
   // or copied into dist/lib in gulp task copy:libs
   external,
-  input: 'src/index.ts', // can be a typescript file if we have a rollup typescript plugin
+  input: 'src/index.tsx', // can be a typescript file if we have a rollup typescript plugin
   format: 'iife',
   globals: {
     'firebase/app': 'firebase',
     'mobx': 'mobx',
     'firebaseui': 'firebaseui'
   },
+  name: "appscript",
   plugins: [
     replace({
-      'process.env.NODE_ENV': `'${process.env.NODE_ENV || "development"}'`
+      // Warning: process.env.NODE_ENV is never of type "undefined" it's always of type "string"
+      // So process.env.NODE_ENV = undefined will result in a value "undefined"
+      // https://github.com/nodejs/node-v0.x-archive/issues/25873
+      'process.env.NODE_ENV': `'${(process.env.NODE_ENV && process.env.NODE_ENV !== "undefined" ? process.env.NODE_ENV : "development")}'`
     }),
     resolve(),
     commonJS({

@@ -34,9 +34,12 @@ const configuration = {
 };
 
 gulp.task('root', function () {
-    return gulp.src([
+    return merge([gulp.src([
         configuration.paths.src.manifest
-    ]).pipe(gulp.dest(configuration.paths.dist));
+    ]).pipe(gulp.dest(configuration.paths.dist)),
+    gulp.src('./src/**/*.html')
+        .pipe(gulp.dest('./dist'))
+    ]);
 });
 
 gulp.task('images', function () {
@@ -83,33 +86,19 @@ gulp.task("copy:libs", gulp.series("clean:libs", function () {
 gulp.task('bundle', function () {
     return rollup('rollup.config.js')
         .pipe(source("app.js")) // name of the output file
-        .pipe(buffer()) // rev() doesn't support rollup stream, needs to buffer first
-        .pipe(rev())
+        .pipe(gulp.dest('dist/js')); // location to put the output file
+});
+
+gulp.task('bundle-background', function () {
+    return rollup('rollup-background.config.js')
+        .pipe(source("background.js"))
         .pipe(gulp.dest('dist/js')); // location to put the output file
 });
 
 gulp.task('tswatch', gulp.series(function (done) {
-    gulp.watch(['./src/**/*.ts', './src/**/*.tsx'], gulp.series('clean-js', 'bundle', 'inject'));
+    gulp.watch(['./src/**/*.ts', './src/**/*.tsx'], gulp.series('clean-js', gulp.parallel('bundle', 'bundle-background'), 'inject'));
     done();
 }));
-
-gulp.task('inject', function (done) {
-    const appStream = gulp.src(['./dist/**/*.js',
-        './dist/**/*.css'], { read: false });
-
-    const vendorStream = gulp.src([
-        './dist/lib/**/*.js'], { read: false });
-
-    gulp.src('./src/**/*.html')
-        .pipe(inject(series(vendorStream, appStream)
-            , {
-                ignorePath: 'dist',
-                addRootSlash: true,
-                relative: false,
-            }))
-        .pipe(gulp.dest('./dist'));
-    done();
-});
 
 gulp.task('clean-js', function (cb) {
     // You can use multiple globbing patterns as you would with `gulp.src`
@@ -134,8 +123,8 @@ gulp.task('set-node-env', function (done) {
 // Gulp default task
 gulp.task('default', gulp.series(
     gulp.parallel('clean-dist', 'set-node-env'),
-    gulp.parallel('bundle', 'scss', 'copy:libs'),
-    gulp.parallel('inject', 'root', 'images')
+    gulp.parallel('bundle', 'bundle-background', 'scss', 'copy:libs'),
+    gulp.parallel('root', 'images')
 ));
 
 gulp.task('watch', gulp.series('default', gulp.parallel('tswatch', 'scsswatch')));
