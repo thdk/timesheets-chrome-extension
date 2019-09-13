@@ -2,11 +2,12 @@
 import * as React from 'react';
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
 import * as firebase from 'firebase/app'
-import config, { LoginProvider } from '../config';
+import config, { LoginProvider } from '../../config';
+import * as firebaseui from 'firebaseui';
 
 const { providers, tosUrl, privacyPolicyUrl } = config.firebaseAuth;
 
-const getFirebaseAuthProvider =(provider: LoginProvider) => {
+const getFirebaseAuthProvider = (provider: LoginProvider) => {
     switch (provider) {
         case LoginProvider.Google:
             return firebase.auth.GoogleAuthProvider.PROVIDER_ID;
@@ -14,6 +15,8 @@ const getFirebaseAuthProvider =(provider: LoginProvider) => {
             return firebase.auth.FacebookAuthProvider.PROVIDER_ID;
         case LoginProvider.Email:
             return firebase.auth.EmailAuthProvider.PROVIDER_ID;
+        case LoginProvider.Guest:
+            return firebaseui.auth.AnonymousAuthProvider;
     }
 }
 // Configure FirebaseUI.
@@ -33,16 +36,10 @@ const uiConfig = {
     privacyPolicyUrl
 };
 
-export class SignInScreen extends React.Component {
-    render() {
-        return (
-            <div>
-                <h1>My App</h1>
-                <p>Please sign-in:</p>
-                <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()} />
-            </div>
-        );
-    }
-
-
-}
+export const SignInScreen = () => (
+    <div>
+        <h1>My App</h1>
+        <p>Please sign-in:</p>
+        <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()} />
+    </div>
+);

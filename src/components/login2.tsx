@@ -1,10 +1,10 @@
 import * as React from 'react';
-
 import * as firebase from 'firebase/app';
+import 'firebase/auth';
 import * as firebaseui from 'firebaseui';
 
 import config, { LoginProvider } from '../config';
-import { auth } from '../my-firebase';
+import { firebaseApp } from '../stores/loginstore';
 
 export class Login extends React.Component {
     private loginUi?: firebaseui.auth.AuthUI;
@@ -14,6 +14,7 @@ export class Login extends React.Component {
                 <div id="firebaseui-auth-container"></div>
             </div>
         );
+
     }
 
     componentDidMount() {
@@ -40,7 +41,7 @@ export class Login extends React.Component {
         };
 
         // Initialize the FirebaseUI Widget using Firebase.
-        this.loginUi = new firebaseui.auth.AuthUI(auth);
+        this.loginUi = new firebaseui.auth.AuthUI(firebaseApp.auth());
         // The start method will wait until the DOM is loaded.
         this.loginUi.start('#firebaseui-auth-container', loginUiConfig);
     }
@@ -57,6 +58,10 @@ export class Login extends React.Component {
                 return firebase.auth.FacebookAuthProvider.PROVIDER_ID;
             case LoginProvider.Email:
                 return firebase.auth.EmailAuthProvider.PROVIDER_ID;
+            case LoginProvider.Guest:
+                return firebaseui.auth.AnonymousAuthProvider;
         }
+
+        throw new Error("No firebase provider set up for " + provider);
     }
 }
