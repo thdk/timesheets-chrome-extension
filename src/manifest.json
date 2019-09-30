@@ -22,5 +22,17 @@
         ],
         "persistent": false
     },
+    "content_scripts": [
+        {
+          "matches": [
+            "http://mantis/tracker*"
+          ],
+          "js": [
+            "js/contentscript.js"
+          ],
+          "run_at": "document_end",
+          "all_frames": true
+        }
+      ],
     "content_security_policy": "script-src 'self' https://apis.google.com/ https://cdn.firebase.com/ https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com; object-src 'self'"
 }

@@ -5,9 +5,10 @@ import typescript from 'rollup-plugin-typescript2';
 import replace from 'rollup-plugin-replace';
 
 export default {
-  input: 'src/background.ts', // can be a typescript file if we have a rollup typescript plugin
+  input: 'src/contentscript.ts', // can be a typescript file if we have a rollup typescript plugin
   format: 'iife',
   name: "backgroundscript",
+  external: ["@types/chrome"],
   plugins: [
     replace({
       // Warning: process.env.NODE_ENV is never of type "undefined" it's always of type "string"
@@ -18,9 +19,7 @@ export default {
     resolve(),
     commonJS({
       include: 'node_modules/**',
-      namedExports: {
-        'node_modules\\firebase\\app\\dist\\index.esm.js': ['initializeApp'],
-        'node_modules\\firestorable\\dist\\index.js': ['Collection'],
+      namedExports: {'node_modules\\firebase\\app\\dist\\index.esm.js': ['initializeApp'],
       }
     }),
     typescript(),

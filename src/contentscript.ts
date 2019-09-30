@@ -1,8 +1,9 @@
 import "@types/chrome";
-import * as $ from "jquery";
+import $ from "jquery";
+import { ITimesheetLine } from "./interfaces";
+
 
 // Banner: http://patorjk.com/software/taag/#p=display&f=Ogre&t=Protime
-
 let isSupported = "";
 let currentTabId: string | null = null;
 
@@ -13,11 +14,11 @@ chrome.runtime.onMessage.addListener(
     }
 );
 
-function copyToClipBoard(text: string) {
-    console.log(text);
+function newRegistration(line: ITimesheetLine) {
+    console.log({line});
     chrome.runtime.sendMessage({
-        type: 'copyToClipBoard',
-        text: text
+        type: 'newRegistration',
+        line,
     });
 }
 
@@ -50,15 +51,15 @@ $form.on('submit', () => {
     extractAndCopyToClipBoard();
 });
 
-$('form[action="bugnote_add.php"] [type="submit"]').on('click', () => {
-    extractAndCopyToClipBoard();
-});
+// $('form[action="bugnote_add.php"] [type="submit"]').on('click', () => {
+//     extractAndCopyToClipBoard();
+// });
 
 function extractAndCopyToClipBoard() {
     var line = getLine();
     if (line) {
-        if (confirm('Do you want to write timesheet information to your clipboard?\nThis will overwrite your clipboard.')) {
-            copyToClipBoard(line);
+        if (confirm('Add to timesheet?')) {
+            newRegistration(line);
         }
     }
 };
@@ -82,7 +83,12 @@ function getProjectPath(projectName: string) {
             parentText = parentLi.querySelector("a")!.innerText;
         }
     }
-    return parentText + " - " + projectName;
+    if (parentText) {
+        return parentText + " - " + projectName;
+    }
+    else {
+        return projectName;
+    }
 }
 
 function getHours(timeTracking: string) {
@@ -90,7 +96,7 @@ function getHours(timeTracking: string) {
     return parseInt(parts[0], 10) + (parseInt(parts[1], 10) / 60);
 }
 
-function getLine() {
+function getLine(): ITimesheetLine | undefined {
     var bugId = $form.find('input[name="bug_id"]').val();
     if (!bugId) { //bugnote_update.php
         // "http://mantis/mantisbt-1.2.11/view.php?id=22335"
@@ -99,12 +105,15 @@ function getLine() {
             bugId = document.referrer.substring(index + 4);
         }
     }
+
+    
     var timeTracking = ($form.find('input[name="time_tracking"]').val() || "").toString();
     var status = $form.find('input[name="status"]').val();
-
+    
     if (bugId && timeTracking) {
-        var day = new Date().getDate();
-        var time = getHours(timeTracking);
+        bugId = bugId.toString();
+        const date = new Date();
+        const time = getHours(timeTracking);
         if (time !== 0) {
             var project = document.querySelector<HTMLElement>(".bug-project:not(.category)")!.innerText;
             var projectPath = getProjectPath(project);
@@ -131,28 +140,34 @@ function getLine() {
             var task = 'Programming';
 
             // from 'toreview'
-            if (oldStateName == 'toreview') task = 'Code review';
-            else if (oldStateName == 'tostable') task = 'Mercurial';
+            if (oldStateName === 'toreview') task = 'Code review';
+            else if (oldStateName === 'tostable') task = 'Mercurial';
 
             // from 'qa'
-            else if (oldStateName == 'qa') task = 'Testing';
+            else if (oldStateName === 'qa') task = 'Testing';
 
             // to 'developed'
-            else if (status == 60) task = 'Programming';
+            else if (status === 60) task = 'Programming';
 
             // to 'qa'
-            else if (status == 70) task = 'Mercurial';
+            else if (status === 70) task = 'Mercurial';
 
             // to 'stable'
-            else if (status == 80) task = 'Mercurial'; // resolved
-            else if (status == 90) task = 'Mercurial'; // resolved
+            else if (status === 80) task = 'Mercurial'; // resolved
+            else if (status === 90) task = 'Mercurial'; // resolved
 
             // If no old StateName available
-            else if (status == 20) task = 'Testing'; // When developers feedback, mostly no time inserted, so Testing used
-            else if (status == 63) task = 'Code review';
-            else if (status == 75) task = 'Testing';
+            else if (status === 20) task = 'Testing'; // When developers feedback, mostly no time inserted, so Testing used
+            else if (status === 63) task = 'Code review';
+            else if (status === 75) task = 'Testing';
 
-            return day + "\t" + time.toString().replace('.', ',') + "\t" + projectPath + "\t" + task + '\t\t' + details;
+            return {
+                date,
+                time,
+                project: projectPath,
+                task,
+                description: details,
+            };
         }
     }
 

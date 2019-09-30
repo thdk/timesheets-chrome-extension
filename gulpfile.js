@@ -95,6 +95,12 @@ gulp.task('bundle-background', function () {
         .pipe(gulp.dest('dist/js')); // location to put the output file
 });
 
+gulp.task('bundle-content-mantis', function () {
+    return rollup('rollup-content-mantis.config.js')
+        .pipe(source("contentscript.js"))
+        .pipe(gulp.dest('dist/js')); // location to put the output file
+});
+
 gulp.task('tswatch', gulp.series(function (done) {
     gulp.watch(['./src/**/*.ts', './src/**/*.tsx'], gulp.series('clean-js', gulp.parallel('bundle', 'bundle-background'), 'inject'));
     done();
@@ -123,7 +129,7 @@ gulp.task('set-node-env', function (done) {
 // Gulp default task
 gulp.task('default', gulp.series(
     gulp.parallel('clean-dist', 'set-node-env'),
-    gulp.parallel('bundle', 'bundle-background', 'scss', 'copy:libs'),
+    gulp.parallel('bundle', 'bundle-background', 'bundle-content-mantis', 'scss', 'copy:libs'),
     gulp.parallel('root', 'images')
 ));
 
