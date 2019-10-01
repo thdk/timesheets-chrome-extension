@@ -4,3 +4,5 @@ node_modules/
 src/config.ts
 .vscode/
 *.zip
+*.crx
+*.pem

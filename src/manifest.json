@@ -1,9 +1,9 @@
 {
-    "key": "egmldhadpbcckheehmbmilafamlenplp",
+    "manifest_version": 2,
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqBPm5a+x6YgxiALCVgouAiiKFxdG0Su3I7mtmaSQ4R1/JjU8X7WvgieBTJDjHduOmyUihE1VdsBluPx+b/BmPpD6YH/S+GB2sfFq7BerJE41Eg+fakK3fp0O2z+VRxB752H77v5ov/x6qtBNmvDI29s0U6C/VTFmYtk1S8zafQnJBn+v9HyJC5bVY77GV2fjaKBhJVOs6jo2C/ZHcJwsQJhq5rPxba1IfAjfhhaoiztkbxrCoqo/XWIscFM4tYdX491jEvguQh9AnSDZAcZZj2WoikIjlpEBQsVWiL5GBFfi+IEC7wFfx7qZjPn0TkbHB9+EA9ZyRO8bb0rbweIupwIDAQAB",
     "name": "Timesheets",
     "description": "Add registrations into your timesheets directly from your browser.",
     "version": "1.0",
-    "manifest_version": 2,
     "browser_action": {
         "default_popup": "index.html",
         "default_icon": "images/icon-16x16.png"
