@@ -2,6 +2,9 @@ import "@types/chrome";
 import $ from "jquery";
 import { ITimesheetLine } from "./interfaces";
 
+chrome.runtime.onMessage.addListener((message) => {
+    console.log(JSON.stringify({message}, undefined, "  "));
+});
 
 // Banner: http://patorjk.com/software/taag/#p=display&f=Ogre&t=Protime
 let isSupported = "";
@@ -15,7 +18,7 @@ chrome.runtime.onMessage.addListener(
 );
 
 function newRegistration(line: ITimesheetLine) {
-    console.log({line});
+    console.log(JSON.stringify({ line }, undefined, "  "));
     chrome.runtime.sendMessage({
         type: 'newRegistration',
         line,
@@ -51,45 +54,12 @@ $form.on('submit', () => {
     extractAndCopyToClipBoard();
 });
 
-// $('form[action="bugnote_add.php"] [type="submit"]').on('click', () => {
-//     extractAndCopyToClipBoard();
-// });
-
 function extractAndCopyToClipBoard() {
     var line = getLine();
     if (line) {
-        if (confirm('Add to timesheet?')) {
-            newRegistration(line);
-        }
+        newRegistration(line);
     }
 };
-
-function getProjectPath(projectName: string) {
-    const projectLis = Array.from(document.querySelectorAll<HTMLLIElement>("#projects-list li"));
-    const activeLi = projectLis.filter(liEl => liEl.querySelector("a")!.innerText.trim() === projectName)[0];
-    if (!activeLi) console.error(`Project '${projectName}' not found`);
-
-    const getIndentSize = (liEl: HTMLLIElement) => (liEl.querySelector("a")!.innerText.indexOf(projectName[0]) / 4);
-    let indentation = getIndentSize(activeLi);
-    if (indentation !== 2) console.error(`Project '${projectName}' expected on depth 2`);
-
-    // Find parent
-    let parentLi = activeLi; // logical parent (with indentation)
-    let parentText = "";
-    while (indentation === 2) {
-        parentLi = activeLi.previousSibling as HTMLLIElement; // logical parent (with indentation)
-        indentation = getIndentSize(parentLi);
-        if (indentation === 1) {
-            parentText = parentLi.querySelector("a")!.innerText;
-        }
-    }
-    if (parentText) {
-        return parentText + " - " + projectName;
-    }
-    else {
-        return projectName;
-    }
-}
 
 function getHours(timeTracking: string) {
     var parts = timeTracking.split(':')
@@ -106,20 +76,19 @@ function getLine(): ITimesheetLine | undefined {
         }
     }
 
-    
     var timeTracking = ($form.find('input[name="time_tracking"]').val() || "").toString();
     var status = $form.find('input[name="status"]').val();
-    
+
     if (bugId && timeTracking) {
         bugId = bugId.toString();
         const date = new Date();
         const time = getHours(timeTracking);
         if (time !== 0) {
-            var project = document.querySelector<HTMLElement>(".bug-project:not(.category)")!.innerText;
-            var projectPath = getProjectPath(project);
-            var details = document.querySelector<HTMLElement>(".bug-summary:nth-child(2)")!.innerText.trim() || bugId;
+            const projectEl = document.querySelector<HTMLElement>(".bug-project:not(.category)");
+            const project = projectEl ? projectEl.innerText.trim() : "";
+            const description = document.querySelector<HTMLElement>(".bug-summary:nth-child(2)")!.innerText.trim() || bugId;
 
-            var oldStateName = document.querySelector<HTMLElement>(".bug-status:not(.category)")!.innerText.trim();
+            const oldStateName = document.querySelector<HTMLElement>(".bug-status:not(.category)")!.innerText.trim();
 
             /* 
             * status: 
@@ -137,7 +106,7 @@ function getLine(): ITimesheetLine | undefined {
             * 90:closed';
             */
 
-            var task = 'Programming';
+            let task: string | undefined = undefined;
 
             // from 'toreview'
             if (oldStateName === 'toreview') task = 'Code review';
@@ -164,17 +133,14 @@ function getLine(): ITimesheetLine | undefined {
             return {
                 date,
                 time,
-                project: projectPath,
+                project,
                 task,
-                description: details,
+                description,
             };
         }
     }
 
     return undefined;
 }
-
-	// Test
-	// extractAndCopyToClipBoard();
 
 

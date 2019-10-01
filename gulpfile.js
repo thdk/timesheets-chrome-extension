@@ -71,8 +71,8 @@ gulp.task('clean:libs', gulp.series(function (done) {
 }));
 
 gulp.task("copy:libs", gulp.series("clean:libs", function () {
-    const production = process.env.NODE_ENV === "production";
-    const mobxLib = production ? "mobx/lib/mobx.umd.min.js" : "mobx/lib/mobx.umd.js"
+    // const production = process.env.NODE_ENV === "production";
+    const mobxLib = "mobx/lib/mobx.umd.min.js"; // production ? "mobx/lib/mobx.umd.min.js" : "mobx/lib/mobx.umd.js"
     const libs = [];
 
     libs.push(
