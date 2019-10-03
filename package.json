@@ -7,7 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm run build:development",
     "build:development": "gulp --env=development",
-    "build:production": "gulp --env=production"
+    "build:production": "gulp --env=production",
+    "copy": "xcopy dist ..\\build-smartphoto-chrome-extension /O /E /Y /i",
+    "deploy:development": "npm run build:development && npm run copy",
+    "deploy:production": "npm run build:production && npm run copy",
+    "deploy": "npm run deploy:development"
   },
   "repository": {
     "type": "git",
