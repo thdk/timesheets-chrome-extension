@@ -6,6 +6,7 @@ import config from './config';
 import { ITimesheetLine, IProjectData, ITaskData, IUserData, IRegistrationData, IRegistration } from './interfaces';
 import { Collection, Doc } from "firestorable";
 import { convertRegistration } from './core/registrations/serialization';
+import { getIssueAsync } from './jira/api';
 
 firebase.initializeApp({
     apiKey: config.apiKey,
@@ -41,6 +42,9 @@ firebase.auth().onAuthStateChanged(user => {
 });
 
 function getProjectByName(name: string) {
+    Array.from(projectsCollection.docs.values()).forEach(
+        p => console.log(p.data!.name));
+
     const project = Array.from(projectsCollection.docs.values()).find(doc => !!doc.data && doc.data.name === name);
 
     return project ? project.id : undefined
@@ -95,17 +99,28 @@ function saveTimesheetLine(line: ITimesheetLine) {
 chrome.runtime.onMessage && chrome.runtime.onMessage.addListener(function (message) {
     sendMessage("Background received message: " + message);
     sendMessage({ message });
-    if (message && message.type == 'newRegistration') {
+    if (message.type === 'newRegistration') {
         const newLine = message.line as ITimesheetLine;
         saveTimesheetLine(newLine);
+    } else if (message.type === "request-fetch-jira-issue") {
+        fetchJiraIssue(message.issueId);
     }
 });
+
+function fetchJiraIssue(id: string) {
+    getIssueAsync(id).then(issue => {
+        sendMessage({
+            type: "fetch-jira-issue-success",
+            issue,
+        });
+    });
+}
 
 function sendMessage(message: any) {
     console.log(JSON.stringify(message, undefined, "  "));
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         if (tabs.length && tabs[0].id) {
-            chrome.tabs.sendMessage(tabs[0].id, { message });
+            chrome.tabs.sendMessage(tabs[0].id, message);
         }
     });
 }

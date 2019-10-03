@@ -1,21 +1,17 @@
 import "@types/chrome";
 import $ from "jquery";
 import { ITimesheetLine } from "./interfaces";
+import { IMantisRelationship } from "./contentscripts/mantis/types";
 
 chrome.runtime.onMessage.addListener((message) => {
-    console.log(JSON.stringify({message}, undefined, "  "));
-});
+    console.log(JSON.stringify({ message }, undefined, "  "));
 
-// Banner: http://patorjk.com/software/taag/#p=display&f=Ogre&t=Protime
-let isSupported = "";
-let currentTabId: string | null = null;
-
-chrome.runtime.onMessage.addListener(
-    function (request: any) {
-        currentTabId = request.tabId as string;
-        notifyTabSupported();
+    switch (message.type) {
+        case "fetch-jira-issue-success": {
+            insertRelationShip(message.issue);
+        }
     }
-);
+});
 
 function newRegistration(line: ITimesheetLine) {
     console.log(JSON.stringify({ line }, undefined, "  "));
@@ -23,16 +19,6 @@ function newRegistration(line: ITimesheetLine) {
         type: 'newRegistration',
         line,
     });
-}
-
-function notifyTabSupported() {
-    if (currentTabId && isSupported) {
-        chrome.runtime.sendMessage({
-            type: 'isSupportedResult',
-            tabId: currentTabId,
-            text: isSupported
-        });
-    }
 }
 
 // ===============================================================
@@ -44,11 +30,6 @@ function notifyTabSupported() {
 //                              
 // ----------------------------------------------------------------
 var $form = $('form[action="bug_update.php"], form[action="bugnote_add.php"], form[action="bugnote_update.php"]');
-
-if ($form.length) {
-    isSupported = 'Mantis';
-    notifyTabSupported();
-}
 
 $form.on('submit', () => {
     extractAndCopyToClipBoard();
@@ -143,4 +124,63 @@ function getLine(): ITimesheetLine | undefined {
     return undefined;
 }
 
+function scrapePageForJiraIssues() {
+    const $bugnotesWithJiraIssues = $(".bugnote-note.bugnote-public:contains(WEB-)");
 
+    const issueSet = new Set<string>();
+    $bugnotesWithJiraIssues.each((_, el) => {
+        const matches = el.innerText.match(/WEB-\w+/g);
+        if (!matches) return;
+        matches.forEach(match => {
+            issueSet.add(match);
+        });
+    });
+
+    if (issueSet.size) {
+        Array.from(issueSet.values()).forEach(id => {
+            chrome.runtime.sendMessage({
+                type: 'request-fetch-jira-issue',
+                issueId: id
+            });
+        })
+    }
+}
+
+function insertRelationShip(relation: IMantisRelationship) {
+    const relationshipsContainerEl = document.querySelector("#relationships");
+
+    if (!relationshipsContainerEl) return;
+    const hasRelationsships = !!relationshipsContainerEl.querySelector(".widget-main");
+
+    if (!hasRelationsships) {
+        const bodyEl = relationshipsContainerEl.querySelector(".widget-body");
+        if (!bodyEl) return;
+
+        bodyEl.insertAdjacentHTML("beforeend", `
+        <div class="widget-main no-padding">
+            <div class="table-responsive">
+                <table class="table table-bordered table-condensed table-hover">
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        `)
+    }
+
+    const tableBodyEl = relationshipsContainerEl.querySelector("tbody");
+    if (!tableBodyEl) return;
+
+    const { assignee, project, status, title, type, id } = relation;
+    tableBodyEl.insertAdjacentHTML("afterbegin", `
+    <tr>
+        <td><span class="nowrap">${type}</span></td>
+        <td><a href="http://jira/browse/${id}">${id}</a></td>
+        <td>${status}</td>
+        <td>${assignee}</td>
+        <td>${project}</td>
+        <td>${title}</td>
+    </tr>`)
+}
+
+scrapePageForJiraIssues();

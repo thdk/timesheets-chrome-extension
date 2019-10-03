@@ -15,13 +15,14 @@
     },
     "permissions": [
         "tabs",
-        "identity"
+        "identity",
+        "*://jira/*"
     ],
     "background": {
         "scripts": [
             "js/background.js"
         ],
-        "persistent": false
+        "persistent": true
     },
     "content_scripts": [
         {

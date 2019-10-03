@@ -6,3 +6,4 @@ src/config.ts
 *.zip
 *.crx
 *.pem
+*.7z
