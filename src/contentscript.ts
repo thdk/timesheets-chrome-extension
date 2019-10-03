@@ -44,7 +44,7 @@ function extractAndCopyToClipBoard() {
 
 function getHours(timeTracking: string) {
     var parts = timeTracking.split(':')
-    return parseInt(parts[0], 10) + (parseInt(parts[1], 10) / 60);
+    return Math.round(parseInt(parts[0], 10) + (parseInt(parts[1], 10) / 60) * 100)  / 100;
 }
 
 function getLine(): ITimesheetLine | undefined {
