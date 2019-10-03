@@ -13,7 +13,7 @@ chrome.runtime.onMessage.addListener((message) => {
     }
 });
 
-function newRegistration(line: ITimesheetLine) {
+function handleNewRegistration(line: ITimesheetLine) {
     console.log(JSON.stringify({ line }, undefined, "  "));
     chrome.runtime.sendMessage({
         type: 'newRegistration',
@@ -38,7 +38,7 @@ $form.on('submit', () => {
 function extractAndCopyToClipBoard() {
     var line = getLine();
     if (line) {
-        newRegistration(line);
+        handleNewRegistration(line);
     }
 };
 
@@ -57,8 +57,8 @@ function getLine(): ITimesheetLine | undefined {
         }
     }
 
-    var timeTracking = ($form.find('input[name="time_tracking"]').val() || "").toString();
-    var status = $form.find('input[name="status"]').val();
+    const timeTracking = ($form.find('input[name="time_tracking"]').val() || "").toString();
+    const status = +($form.find('input[name="status"]').val() || -1);
 
     if (bugId && timeTracking) {
         bugId = bugId.toString();

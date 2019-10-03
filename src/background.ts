@@ -42,9 +42,6 @@ firebase.auth().onAuthStateChanged(user => {
 });
 
 function getProjectByName(name: string) {
-    Array.from(projectsCollection.docs.values()).forEach(
-        p => console.log(p.data!.name));
-
     const project = Array.from(projectsCollection.docs.values()).find(doc => !!doc.data && doc.data.name === name);
 
     return project ? project.id : undefined
