@@ -150,21 +150,17 @@ function insertRelationShip(relation: IMantisRelationship) {
     const relationshipsContainerEl = document.querySelector("#relationships");
 
     if (!relationshipsContainerEl) return;
-    const hasRelationsships = !!relationshipsContainerEl.querySelector(".widget-main");
+    const hasRelationsships = !!relationshipsContainerEl.querySelector(".widget-main table");
 
     if (!hasRelationsships) {
-        const bodyEl = relationshipsContainerEl.querySelector(".widget-body");
-        if (!bodyEl) return;
+        const tableWrapperEl = relationshipsContainerEl.querySelector(".table-responsive");
+        if (!tableWrapperEl) return;
 
-        bodyEl.insertAdjacentHTML("beforeend", `
-        <div class="widget-main no-padding">
-            <div class="table-responsive">
-                <table class="table table-bordered table-condensed table-hover">
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        tableWrapperEl.insertAdjacentHTML("beforeend", `
+            <table class="table table-bordered table-condensed table-hover">
+                <tbody>
+                </tbody>
+            </table>
         `)
     }
 
