@@ -4,11 +4,10 @@ const gulp = require('gulp');
 const rollup = require('rollup-stream');
 const sass = require('gulp-sass');
 const rev = require('gulp-rev');
-const series = require('stream-series');
 const buffer = require('gulp-buffer');
-const inject = require('gulp-inject');
 const del = require('del');
 const merge = require("merge-stream");
+var ts = require('gulp-typescript');
 
 const postcss = require('gulp-postcss');
 const autoprefixer = require('autoprefixer');
@@ -73,7 +72,11 @@ gulp.task('clean:libs', gulp.series(function (done) {
 gulp.task("copy:libs", gulp.series("clean:libs", function () {
     // const production = process.env.NODE_ENV === "production";
     const mobxLib = "mobx/lib/mobx.umd.min.js"; // production ? "mobx/lib/mobx.umd.min.js" : "mobx/lib/mobx.umd.js"
-    const libs = [];
+    const jquery = "jquery/dist/jquery.min.js";
+    const libs = [
+        gulp.src(configuration.paths.node_modules + jquery)
+            .pipe(gulp.dest(configuration.paths.dist + "/lib/jquery"))
+    ];
 
     libs.push(
         gulp.src(configuration.paths.node_modules + mobxLib)
@@ -99,6 +102,15 @@ gulp.task('bundle-content-mantis', function () {
     return rollup('rollup-content-mantis.config.js')
         .pipe(source("contentscript.js"))
         .pipe(gulp.dest('dist/js')); // location to put the output file
+});
+
+gulp.task('build-content-protime', function () {
+    return gulp.src('src/contentscripts/protime**/*.ts')
+        .pipe(ts({
+            noImplicitAny: true,
+            outFile: 'index.js'
+        }))
+        .pipe(gulp.dest('dist/js/content/protime'));
 });
 
 gulp.task('tswatch', gulp.series(function (done) {
@@ -129,7 +141,14 @@ gulp.task('set-node-env', function (done) {
 // Gulp default task
 gulp.task('default', gulp.series(
     gulp.parallel('clean-dist', 'set-node-env'),
-    gulp.parallel('bundle', 'bundle-background', 'bundle-content-mantis', 'scss', 'copy:libs'),
+    gulp.parallel(
+        'bundle',
+        'bundle-background',
+        'bundle-content-mantis',
+        'build-content-protime',
+        'scss',
+        'copy:libs',
+    ),
     gulp.parallel('root', 'images')
 ));
 
