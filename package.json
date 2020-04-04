@@ -46,7 +46,7 @@
     "gulp-rev": "^9.0.0",
     "gulp-sass": "^4.0.2",
     "merge-stream": "^1.0.1",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.3",
     "rollup": "^1.21.2",
     "rollup-plugin-commonjs": "^8.4.1",
     "rollup-plugin-node-resolve": "^4.0.1",
