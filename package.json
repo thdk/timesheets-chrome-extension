@@ -62,7 +62,7 @@
     "firebase": "^5.11.1",
     "firestorable": "0.0.6",
     "gulp-typescript": "^6.0.0-alpha.1",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "mobx": "^5.9.0",
     "mobx-react": "^5.4.3",
     "mobx-undefined-value": "^1.0.0",
